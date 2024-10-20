@@ -12,6 +12,9 @@ export const handler: Schema["sayHello"]["functionHandler"] = async (event) => {
   const { name } = event.arguments;
   let message = env.MESSAGE;
   let API_KEY = env.API_KEY;
+  //Pull from the process since env if defined in say-hello/resource
+  let CUSTOM_QUEUE_URL = process.env.CUSTOM_QUEUE_URL; 
+  let AWS_REGION = process.env.AWS_REGION;
   // return typed from `.returns()`
   
   const genAI = new GoogleGenerativeAI(API_KEY);
@@ -32,14 +35,13 @@ export const handler: Schema["sayHello"]["functionHandler"] = async (event) => {
     "name": name,
     "message": message,
   }
-  console.log("******* process.env *********")
-  console.log( process.env)
-  console.log("******* env **********")
-  console.log(env)
+  //console.log("******* process.env *********")
+  //console.log( process.env)
+  //console.log("******* env **********")
+  //console.log(env)
   // Insert item into CustomQueue
-  const sqsClient = new SQSClient({ region: "us-east-1" });
-  //const queueUrl = process.env.SQS_QUEUE_URL;
-  const queueUrl = "https://sqs.us-east-1.amazonaws.com/838370782455/amplify-amplifyvuetemplate-boechris-sandbox-399-CustomQueue6CD3A366-e4ydcMQyd1Mr"
+  const sqsClient = new SQSClient({ region: AWS_REGION });
+  const queueUrl = CUSTOM_QUEUE_URL
   const params = {
     QueueUrl: queueUrl,
     MessageBody: JSON.stringify(jsonResponse),
