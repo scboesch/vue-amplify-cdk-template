@@ -32,6 +32,9 @@ export const handler: Schema["sayHello"]["functionHandler"] = async (event) => {
     "name": name,
     "message": message,
   }
+  console.log("******* process.env *********")
+  console.log( process.env)
+  console.log("******* env **********")
   console.log(env)
   // Insert item into CustomQueue
   const sqsClient = new SQSClient({ region: "us-east-1" });

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource';
 import { data} from './data/resource';
@@ -26,10 +27,11 @@ new CfnOutput(customResourceStack, 'CustomQueueUrl', {
   exportName: 'CustomQueueUrl',
 });
 
+backend.sayHello.resources.lambda.addEnvironment('CUSTOM_QUEUE_URL', customQueue.queueUrl);
 
 backend.addOutput({
   custom: {
-    SQS_QUEUE_URL: customQueue.queueUrl,
+    CUSTOM_QUEUE_URL: customQueue.queueUrl,
   },
 });
 
