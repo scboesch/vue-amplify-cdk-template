@@ -31,24 +31,19 @@ This library is licensed under the MIT-0 License. See the LICENSE file.
 - [x] Update Bedrock API to pass the given prompt and respond to properly. 
 - [x] Pick a common pattern for arranging functions.
 - [x] Secure the application to only support logged in users. 
-- [ ] Save a secured template
-- [ ] Add python lambda
-- [ ] Image upload and analysis
-- [ ] Save a template with python image analsis
-- [ ] Upload file for analysis and Rag
-- [ ] Save a Rag-enabled analysis template
-- [ ] Exportable CDK backend
-- [ ] Get Anthropic API calls working without API_KEY rather than via Bedrock.
-- [ ] Modify the Bedrock API to allow you to select the model in the GUI and pass it to Bedrock. 
-- [ ] Provide a selection of Google models to choose from. 
-- [ ] Add support to keep track of the number of tokens used per user.  
-- [ ] Add a buttons to allow switching between 3 different website styles for comparison. 
-- [ ] Use other LLMs to draft the readme and product planss to start. fro demos. 
+- [ ] Add support for CDK resoruces and ensure those resources can be accessed from the Amplify stack. 
 
 
-- [ ] More Amplify demos with additional features
-- [ ] More Bedrock examples
-- [ ] More examples from the Bedrock workshop
+https://docs.amplify.aws/react/build-a-backend/add-aws-services/custom-resources/
+
+
+It is supposed to be possible to let functions access the API but I had allow issues when trying initially. 
+https://docs.amplify.aws/react/build-a-backend/data/customize-authz/grant-lambda-function-access-to-api/
+
+This example supposedly implements putting policies into a differnt stack to avoid the circular refernce. 
+https://docs.amplify.aws/react/build-a-backend/functions/examples/dynamo-db-stream/
+
+
 
 
 

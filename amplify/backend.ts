@@ -4,6 +4,10 @@ import { data} from './data/resource';
 import { MODEL_ID, MODEL_IDs, generateHaikuFunction } from './functions/generate-haiku/resource';
 import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { sayHello } from './functions/say-hello/resource';
+import * as sns from 'aws-cdk-lib/aws-sns';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { CfnOutput } from 'aws-cdk-lib';
+
 
 export const backend = defineBackend({
   auth,
@@ -11,6 +15,31 @@ export const backend = defineBackend({
   sayHello,
   generateHaikuFunction,
 });
+
+const customResourceStack = backend.createStack('MyCustomResources');
+
+const customQueue = new sqs.Queue(customResourceStack, 'CustomQueue');
+new sns.Topic(customResourceStack, 'CustomTopic');
+
+new CfnOutput(customResourceStack, 'CustomQueueUrl', {
+  value: customQueue.queueUrl,
+  exportName: 'CustomQueueUrl',
+});
+
+
+backend.addOutput({
+  custom: {
+    SQS_QUEUE_URL: customQueue.queueUrl,
+  },
+});
+
+backend.sayHello.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: ['sqs:SendMessage'],
+    resources: [customQueue.queueArn],
+  })
+);
 
 // Will need to provide access to all supportable models. 
 // Replace resources list with the full list of supported models. 

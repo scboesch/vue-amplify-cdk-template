@@ -1,8 +1,11 @@
 // Removing type checking for hanlders.ts to bypass the vue build issue. 
-// @ts-nocheck
+// -@ts-nocheck
 import type { Schema } from "../../data/resource"
 import { env } from '$amplify/env/say-hello';
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
+//import { env as amplifyEnv } from '@aws-amplify/backend-region-aware-client';
+
 
 export const handler: Schema["sayHello"]["functionHandler"] = async (event) => {
   // arguments typed from `.arguments()`
@@ -17,7 +20,7 @@ export const handler: Schema["sayHello"]["functionHandler"] = async (event) => {
   const prompt = name;
   let prompt_reply = "No result";
   try {
-    const result = await model.generateContent(prompt);
+    const result = await model.generateContent(prompt!);
     prompt_reply = result.response.text(); // Handle the response data
   } catch (error) {
     prompt_reply = "Error calling google API" + error;
@@ -29,6 +32,23 @@ export const handler: Schema["sayHello"]["functionHandler"] = async (event) => {
     "name": name,
     "message": message,
   }
+  console.log(env)
+  // Insert item into CustomQueue
+  const sqsClient = new SQSClient({ region: "us-east-1" });
+  //const queueUrl = process.env.SQS_QUEUE_URL;
+  const queueUrl = "https://sqs.us-east-1.amazonaws.com/838370782455/amplify-amplifyvuetemplate-boechris-sandbox-399-CustomQueue6CD3A366-e4ydcMQyd1Mr"
+  const params = {
+    QueueUrl: queueUrl,
+    MessageBody: JSON.stringify(jsonResponse),
+  };
+
+  try {
+    await sqsClient.send(new SendMessageCommand(params));
+    console.log('Message sent to SQS queue');
+  } catch (error) {
+    console.error('Error sending message to SQS queue:', error);
+  }
+
   const response = {
       statusCode: 200,
       body: jsonResponse,
