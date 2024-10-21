@@ -33,10 +33,17 @@ This library is licensed under the MIT-0 License. See the LICENSE file.
 - [x] Secure the application to only support logged in users. 
 - [x] Add support for CDK resoruces and ensure those resources can be accessed from the Amplify stack. 
 - [x] Pass SQS URL to lambda function via env parameters. 
-- [ ] Create a CDK lambda function that monitors the SQS queue. 
-- [ ] Update the CDK lambda function to create a new Todo or different model to demonstrate that CDK resources can update the data model. 
+- [x] Create a CDK lambda function that monitors the SQS queue. 
+- [ ] Enqueue into a stack's exposed SQS queue. Currently, you don't know how to export the queueURL to use it. 
+- [ ] Call a lambda function exposed by a stack. 
+- [ ] Be able to build GUIs that can call lambda functions and sqs queues exposed by stacks. 
 
-- [ ] Correct typscript issue that Property 'addEnvironment' does not exist on backend.sayHello.resources.lambda.addEnvironment
+Functions in the Amplify stack can be streamed back to the console. 
+Functions in other stacks, will not return logs. 
+It may make sense to try calling functions to see the responses. 
+
+It is possible to create a lambda function to monitor the SQS queue when the new lambda function is included in the backend. We can enqueue from sayHello and dequeue from processQueue. We can not enable triggers to monitor SQS queues from outside the stack.
+
 
 
 https://docs.amplify.aws/react/build-a-backend/add-aws-services/custom-resources/
