@@ -31,7 +31,12 @@ This library is licensed under the MIT-0 License. See the LICENSE file.
 - [x] Update Bedrock API to pass the given prompt and respond to properly. 
 - [x] Pick a common pattern for arranging functions.
 - [x] Secure the application to only support logged in users. 
-- [ ] Add support for CDK resoruces and ensure those resources can be accessed from the Amplify stack. 
+- [x] Add support for CDK resoruces and ensure those resources can be accessed from the Amplify stack. 
+- [x] Pass SQS URL to lambda function via env parameters. 
+- [ ] Create a CDK lambda function that monitors the SQS queue. 
+- [ ] Update the CDK lambda function to create a new Todo or different model to demonstrate that CDK resources can update the data model. 
+
+- [ ] Correct typscript issue that Property 'addEnvironment' does not exist on backend.sayHello.resources.lambda.addEnvironment
 
 
 https://docs.amplify.aws/react/build-a-backend/add-aws-services/custom-resources/

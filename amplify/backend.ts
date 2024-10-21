@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { defineBackend } from '@aws-amplify/backend';
 import { auth } from './auth/resource';
 import { data} from './data/resource';
@@ -27,7 +26,10 @@ new CfnOutput(customResourceStack, 'CustomQueueUrl', {
   exportName: 'CustomQueueUrl',
 });
 
+// For some reason, addEnvironment is not found as available by typescript. 
+// @ts-ignore
 backend.sayHello.resources.lambda.addEnvironment('CUSTOM_QUEUE_URL', customQueue.queueUrl);
+
 
 backend.addOutput({
   custom: {
