@@ -5,11 +5,12 @@ import { MODEL_ID, MODEL_IDs, generateHaikuFunction } from './functions/generate
 import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
 import { sayHello } from './functions/say-hello/resource';
 import { processQueueFunction } from './functions/process-queue/resource';
-import * as sns from 'aws-cdk-lib/aws-sns';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import { Fn } from 'aws-cdk-lib';
 import * as lambdaEventSources from 'aws-cdk-lib/aws-lambda-event-sources';
 import { CfnOutput } from 'aws-cdk-lib';
+import { HelloCdkStack } from './customStack/HelloStack';
 
 
 export const backend = defineBackend({
@@ -21,95 +22,66 @@ export const backend = defineBackend({
 });
 
 /*
-  Any resources that will be accessing Amplify resources need to be defined outside of the Amplify stack to avoid circular references. 
-*/
-
-import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-// Import the Lambda module
-
-export class HelloCdkStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
-    const customQueue2 = new sqs.Queue(this, 'CustomQueue2');
-    // Define the Lambda function resource
-    const myFunction = new lambda.Function(this, "HelloWorldFunction", {
-      runtime: lambda.Runtime.NODEJS_20_X, // Provide any supported Node.js runtime
-      handler: "index.handler",
-      code: lambda.Code.fromInline(`
-        exports.handler = async function(event) {
-          console.log(JSON.stringify(event, null, 2));
-          return {
-            statusCode: 200,
-            body: JSON.stringify('Hello World!'),
-          };
-        };
-      `),
-    });
-    // Add an SQS Event Source from the SQS Queue to the Lambda Function
-    const eventSource = new lambdaEventSources.SqsEventSource(customQueue2);
-
-    myFunction.addEventSource(eventSource);
-    new CfnOutput(this, 'CustomQueueUrl2', {
-      value: customQueue2.queueUrl,
-      exportName: 'HelloLambdaQueueUrl',
-    });
-    new CfnOutput(this, 'LambdaFunctionArn', {
-      value: myFunction.functionArn,
-      exportName: 'HelloLambdaFunctionArn',
-    });
-    new CfnOutput(this, 'LambdaFunctionName', {
-      value: myFunction.functionName,
-      exportName: 'HelloLambdaFunctionName',
-    });
-
-  }
-}
+  Any resources that will be accessing Amplify stack resources need to be defined outside of the Amplify stack to avoid circular references. 
+  
+  We can incorporate an entire stack from file.
 
 const customNotifications = new HelloCdkStack (
   backend.createStack('HelloCdkStack'),
   'HelloCdkStack'
 );
+*/
 
-
+// You can also create stacks locally. 
 const customResourceStack = backend.createStack('MyCustomResources');
-
 const customQueue = new sqs.Queue(customResourceStack, 'CustomQueue');
-
 new CfnOutput(customResourceStack, 'CustomQueueUrl', {
   value: customQueue.queueUrl,
   exportName: 'CustomQueueUrl',
 });
 
-    // Create a new Lambda Function
-    const lambdaFunction = new lambda.Function(customResourceStack, 'Function', {
+// Create a new Lambda Function
+const lambdaFunction = new lambda.Function(customResourceStack, 'Function', {
       code: lambda.Code.fromAsset('./amplify/functions/event-processor'),
       handler: 'handler.handler',
       functionName: 'SqsMessageHandler',
       runtime: lambda.Runtime.NODEJS_18_X,
-    });
+});
 
-    // Add an SQS Event Source from the SQS Queue to the Lambda Function
-    const eventSource = new lambdaEventSources.SqsEventSource(customQueue);
+const helloFunction = new lambda.Function(customResourceStack, "HelloWorldFunction", {
+  runtime: lambda.Runtime.NODEJS_18_X, // Provide any supported Node.js runtime
+  handler: "index.handler",
+  code: lambda.Code.fromInline(`
+    exports.handler = async function(event) {
+      console.log(JSON.stringify(event, null, 2));
+      return {
+        statusCode: 200,
+        body: JSON.stringify('Hello from inline stack!'),
+      };
+    };
+  `),
+});
 
-    lambdaFunction.addEventSource(eventSource);
+// Add an SQS Event Source from the SQS Queue to the Lambda Function
+const eventSource = new lambdaEventSources.SqsEventSource(customQueue);
 
-/*
-We want to be able to have stacks expose their lambda functions and queues. 
-Then we can call the lambda functions from the Amplify stack to see results locally. 
-We can also create step-functions stacks to chain lambda functions together. 
+//This will work but not get logged. Functions defined in stacks to not get logged to the console. 
+//lambdaFunction.addEventSource(eventSource);
 
-*/ 
-
-
-// For some reason, addEnvironment is not found as available by typescript. 
+// For some reason, addEnvironment is not found as available by typescript.
 // @ts-ignore
 backend.sayHello.resources.lambda.addEnvironment('CUSTOM_QUEUE_URL', customQueue.queueUrl);
+// @ts-ignore
+backend.sayHello.resources.lambda.addEnvironment('HELLO_LAMBDA_FUNCTION_ARN', helloFunction.functionArn);
+// @ts-ignore
+//backend.sayHello.resources.lambda.addEnvironment('HELLO_LAMBDA_QUEUE_URL', Fn.importValue('HelloLambdaQueueUrl'));
 
 
-// Configure the processQueueFunctio
-// @ts-ignoren
+
+// @ts-ignore
 backend.processQueueFunction.resources.lambda.addEnvironment('QUEUE_URL', customQueue.queueUrl);
+// @ts-ignore
+//backend.processQueueFunction.resources.lambda.addEnvironment('HELLO_LAMBDA_QUEUE_URL', Fn.importValue('HelloLambdaQueueUrl'));
 backend.processQueueFunction.resources.lambda.addToRolePolicy(
   new PolicyStatement({
     effect: Effect.ALLOW,
@@ -119,12 +91,13 @@ backend.processQueueFunction.resources.lambda.addToRolePolicy(
 );
 
 // Add SQS trigger to the processQueueFunction
+// Processing queues with Amplfiy stack functions enables you to easily stream logs. 
 backend.processQueueFunction.resources.lambda.addEventSource(new lambdaEventSources.SqsEventSource(customQueue));
 
 backend.addOutput({
   custom: {
     CUSTOM_QUEUE_URL: customQueue.queueUrl,
-    
+    //HELLO_LAMBDA_QUEUE_URL: Fn.importValue('HelloLambdaQueueUrl'), //Importing values from remote stacks. 
   },
 });
 
@@ -133,6 +106,15 @@ backend.sayHello.resources.lambda.addToRolePolicy(
     effect: Effect.ALLOW,
     actions: ['sqs:SendMessage'],
     resources: [customQueue.queueArn],
+  })
+);
+
+// Add permissions for the sayHello function to invoke the helloFunction. 
+backend.sayHello.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    effect: Effect.ALLOW,
+    actions: ["lambda:InvokeFunction"],
+    resources: [helloFunction.functionArn],
   })
 );
 

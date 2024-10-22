@@ -35,8 +35,8 @@ export const handler: Schema["sayHello"]["functionHandler"] = async (event) => {
     "name": name,
     "message": message,
   }
-  //console.log("******* process.env *********")
-  //console.log( process.env)
+  console.log("******* process.env *********")
+  console.log( process.env)
   //console.log("******* env **********")
   //console.log(env)
   // Insert item into CustomQueue
@@ -52,6 +52,15 @@ export const handler: Schema["sayHello"]["functionHandler"] = async (event) => {
     console.log('Message sent to SQS queue');
   } catch (error) {
     console.error('Error sending message to SQS queue:', error);
+  }
+
+  try {
+    
+    // Add invocation here.
+
+    console.log('Calling helloFunction');
+  } catch (error) {
+    console.error('Error sending invoking helloFunction:', error);
   }
 
   const response = {

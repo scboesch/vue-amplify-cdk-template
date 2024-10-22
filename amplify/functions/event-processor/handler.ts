@@ -24,7 +24,7 @@ async function processRecord(record: SQSRecord): Promise<void> {
 
     try {
         await sqs.send(new DeleteMessageCommand(deleteParams));
-        console.log('Message deleted from queue');
+        console.log('Message deleted from queue by eventProcessor.');
     } catch (error) {
         console.error('Error deleting message from queue:', error);
         throw error;
