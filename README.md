@@ -18,6 +18,9 @@ npm run dev
 ## Secrets Needed
 API_KEY = GOOGLE_GEMINI_API_KEY
 
+## To follow lambda logs by name
+aws logs tail /aws/lambda/{functionName} --follow
+
 ## License
 
 This library is licensed under the MIT-0 License. See the LICENSE file.
@@ -35,26 +38,33 @@ This library is licensed under the MIT-0 License. See the LICENSE file.
 - [x] Pass SQS URL to lambda function via env parameters. 
 - [x] Create a CDK lambda function that monitors the SQS queue. 
 - [x] Call a lambda function exposed by a stack. Have processQueueFunction call HelloCdkStack.HelloWorldFunction
-- [ ] Figure out how to log events from stack lambda functions back to the local console. 
-- [ ] Be able to build GUIs that can call lambda functions and sqs queues exposed by stacks. 
+- [x] Figure out how to log events from stack lambda functions back to the local console. 
+- [x] Be able to build GUIs that can call lambda functions and sqs queues exposed by stacks. 
+
+## You can list all non-deleted stacks
+aws cloudformation list-stacks --query 'StackSummaries[?StackStatus!=`DELETE_COMPLETE`].[StackName]' --output text
+
+## You can create a bash script to follow all logs from a 
+stack. 
+
+#!/bin/bash
+
+STACK_NAME="YOUR_STACK_NAME"
+
+# Get all Lambda function resources from the stack
+LAMBDA_RESOURCES=$(aws cloudformation describe-stack-resources --stack-name $STACK_NAME --query "StackResources[?ResourceType=='AWS::Lambda::Function'].PhysicalResourceId" --output text)
+
+# For each Lambda function, tail its logs
+for FUNCTION_NAME in $LAMBDA_RESOURCES
+do
+    echo "Tailing logs for $FUNCTION_NAME"
+    aws logs tail /aws/lambda/$FUNCTION_NAME --follow &
+done
+
+# Wait for all background processes
+wait
 
 
-Functions in the Amplify stack can be streamed back to the console. 
-Functions in other stacks, will not return logs. 
-It may make sense to try calling functions to see the responses. 
-
-It is possible to create a lambda function to monitor the SQS queue when the new lambda function is included in the backend. We can enqueue from sayHello and dequeue from processQueue. We can not enable triggers to monitor SQS queues from outside the stack.
-
-
-
-https://docs.amplify.aws/react/build-a-backend/add-aws-services/custom-resources/
-
-
-It is supposed to be possible to let functions access the API but I had allow issues when trying initially. 
-https://docs.amplify.aws/react/build-a-backend/data/customize-authz/grant-lambda-function-access-to-api/
-
-This example supposedly implements putting policies into a differnt stack to avoid the circular refernce. 
-https://docs.amplify.aws/react/build-a-backend/functions/examples/dynamo-db-stream/
 
 
 
