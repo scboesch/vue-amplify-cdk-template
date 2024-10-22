@@ -34,9 +34,10 @@ This library is licensed under the MIT-0 License. See the LICENSE file.
 - [x] Add support for CDK resoruces and ensure those resources can be accessed from the Amplify stack. 
 - [x] Pass SQS URL to lambda function via env parameters. 
 - [x] Create a CDK lambda function that monitors the SQS queue. 
-- [ ] Enqueue into a stack's exposed SQS queue. Currently, you don't know how to export the queueURL to use it. 
-- [ ] Call a lambda function exposed by a stack. 
+- [x] Call a lambda function exposed by a stack. Have processQueueFunction call HelloCdkStack.HelloWorldFunction
+- [ ] Figure out how to log events from stack lambda functions back to the local console. 
 - [ ] Be able to build GUIs that can call lambda functions and sqs queues exposed by stacks. 
+
 
 Functions in the Amplify stack can be streamed back to the console. 
 Functions in other stacks, will not return logs. 

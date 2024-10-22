@@ -57,6 +57,17 @@ export const handler: Schema["sayHello"]["functionHandler"] = async (event) => {
   try {
     
     // Add invocation here.
+    const { LambdaClient, InvokeCommand } = require("@aws-sdk/client-lambda");
+    const lambdaClient = new LambdaClient({ region: AWS_REGION });
+    const params = {
+      FunctionName: process.env.HELLO_LAMBDA_FUNCTION_ARN,
+      InvocationType: "RequestResponse",
+      Payload: JSON.stringify({ name: name }),
+    };
+    const command = new InvokeCommand(params);
+    const lambdaResponse = await lambdaClient.send(command);
+    const responsePayload = JSON.parse(new TextDecoder().decode(lambdaResponse.Payload));
+    console.log('helloFunction response:', responsePayload);
 
     console.log('Calling helloFunction');
   } catch (error) {
